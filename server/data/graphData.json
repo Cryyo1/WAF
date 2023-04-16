@@ -1,0 +1,30 @@
+[
+    {
+        "day": "Lundi",
+        "total blocks": 10
+    },
+    {
+        "day": "Mardi",
+        "total blocks": 20
+    },
+    {
+        "day": "Mercredi",
+        "total blocks": 33
+    },
+    {
+        "day": "Jeudi",
+        "total blocks": 14
+    },
+    {
+        "day": "Vendredi",
+        "total blocks": 18
+    },
+    {
+        "day": "Samedi",
+        "total blocks": 5
+    },
+    {
+        "day": "Dimanche",
+        "total blocks": 13
+    }
+]
