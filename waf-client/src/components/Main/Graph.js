@@ -48,6 +48,7 @@ const Graph = () => {
               }
             }
           }}
+          className="mt-4"
         />
       </div>
     );

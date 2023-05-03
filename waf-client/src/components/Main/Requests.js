@@ -5,12 +5,16 @@ import axios from 'axios';
 const Requests = () => {
     const [HttpRequets,setHttpRequests] = React.useState(null);
     useEffect(() => {
-        axios.get('http://localhost:5000/requests')
+        const intervall=setInterval(()=>{
+            axios.get('http://localhost:5000/requests')
             .then(res => {
                 setHttpRequests(res.data)
+                console.log("data updated!!")
             }).catch(err => {
                 console.log(err);
-            });
+            });    
+        },10000)
+        return () => clearInterval(intervall)
     }, []);
     const navigate = useNavigate();
     const goToReq = (id) => {
@@ -21,8 +25,7 @@ const Requests = () => {
     }
 
     const Headers = () => {
-        let columns = Object.keys(HttpRequets[0]).filter((key) => (key !== "Data" && key !== "Headers"));
-        columns.push("Action")
+        let columns = ["Id","Date time","Method","Path","Class","Type","Action"]
         const cols = columns.map((column, index) => {
             if (index === 0) {
                 return <th key={index} className="p-3 rounded-l-md">{column}</th>
@@ -38,12 +41,14 @@ const Requests = () => {
         const rows = HttpRequets.map((row, index) => {
             return (
                 <tr key={index} className="bg-white text-grey-color space-y-5 rounded-md h-full">
+                    <td className="p-3 rounded-l-md">{row.Id}</td>
+                    <td className="p-3 rounded-l-md">{row["Date time"]}</td>
                     <td className="p-3 rounded-l-md">{row.Method}</td>
                     <td className="p-3 ">{row.Path}</td>
                     <td className="p-3 ">
                         {(row.Class === 'anormale') ? <div className="bg-red-500 rounded-md text-sm p-1 m-2 text-white text-center">{row.Class}</div> : <div className="bg-green-500 rounded-md text-sm p-1 m-2 text-white text-center">{row.Class}</div>}
                     </td>
-                    <td className="p-3 ">{(row.Type !== '') ? <div className="bg-red-500 rounded-md text-sm p-1 m-2 text-white">{row.Type}</div> : <div></div>}</td>
+                    <td className="p-3 ">{(row.Type !== '') ? <div className="bg-red-500 rounded-md text-sm p-1 m-2 text-white text-center">{row.Type}</div> : <div></div>}</td>
                     <td className="p-3 rounded-r-md"><button onClick={() => goToReq(index)} className="text-sm text-white bg-primary rounded-md p-1 m-2 hover:bg-[#e2c389] ...">More ...</button></td>
                 </tr>
             );
@@ -54,9 +59,7 @@ const Requests = () => {
         return <div className='text-grey-color'>Loading...</div>;
     }
     return (
-
-        <div className="flex justify-center">
-            <div className="overflow-x-scroll  lg:overflow-visible">
+        <div className="flex justify-center overflow-y-scroll  h-full max-h-full scrollbar-hide...">
                 <table className="table text-gray-400 border-separate border-spacing-y-1 text-sm">
                     <thead className="bg-white text-grey-color">
                         <tr className="bg-white text-grey-color rounded-md">
@@ -69,8 +72,8 @@ const Requests = () => {
                     </tbody>
 
                 </table>
-            </div >
-        </div>
+        </div >
+        
     );
 }
 

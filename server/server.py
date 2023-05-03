@@ -63,6 +63,18 @@ def graphData():
         data = json.loads(jsonFile.read())
     response=jsonify(data)
     return response
+# Gestion des données 
+@app.route('/insert' , methods=['POST'])
+def insert():
+    post_data=request.data
+    post_data=json.loads(post_data.decode('utf-8'))
+    with open('./data/requests.json', 'r') as jsonFile:
+        data = json.loads(jsonFile.read())
+    data.append(post_data)
+    with open('./data/requests.json','w') as jsonFile:
+        json.dump(data,jsonFile,indent=2)
+    return 'Data inserted'
+
 
 if __name__ == '__main__':
     app.run(debug=True)

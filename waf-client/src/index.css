@@ -4,6 +4,8 @@
 
 body {
   background-color: #f7f4f2;
+  height: 100%;
+  width: 100%;
   font-family: 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
