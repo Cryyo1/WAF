@@ -44,7 +44,7 @@ const DetailedReq = () => {
         })
         let Data = (
             <div className="flex flex-row items-center space-x-2">
-                        <h1 className='regular'>{request["Data"]} </h1> 
+                <h1 className='font-bold font-lg text-red-600'>{`\n \n ${request["Data"]}`} </h1> 
             </div>)
         return [render , renderHeaders , Data];
         
