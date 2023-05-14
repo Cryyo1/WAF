@@ -8,7 +8,7 @@ from flask import make_response
 from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
-cors=CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+cors=CORS(app, resources={r"/*": {"origins": "*"}})
 #setting content type to json
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config["JWT_SECRET_KEY"]=os.getenv("JWT_SECRET_KEY")
@@ -70,7 +70,7 @@ def insert():
     post_data=json.loads(post_data.decode('utf-8'))
     with open('./data/requests.json', 'r') as jsonFile:
         data = json.loads(jsonFile.read())
-    data.append(post_data)
+    data.insert(0,post_data)
     with open('./data/requests.json','w') as jsonFile:
         json.dump(data,jsonFile,indent=2)
     return 'Data inserted'

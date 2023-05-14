@@ -2,19 +2,19 @@ from __future__ import print_function
 from sklearn.feature_extraction.text import CountVectorizer
 from urllib.parse import urlparse, unquote
 from store import SQL_KEYWORDS, SQL_REGEX ,UNIX_ALIASES,PATH_TRAVERSAL_REGEX
-import tensorflow as tf
 import re
 import pickle
 import numpy as np
 import string
-import os
 import json
 from urllib.parse import urlparse, parse_qs
+import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import tensorflow as tf
 
 # laoding main  model of detection
 CURRENT_DIR = os.path.dirname(os.path.dirname(__file__))
-MODEL_PATH = os.path.join(CURRENT_DIR, 'models', 'cnn_lstm_final.h5')
+MODEL_PATH = os.path.join(CURRENT_DIR, 'models', 'lstm_final.h5')
 MODEL = tf.keras.models.load_model(MODEL_PATH)
 CONFIG = MODEL.get_config()
 LENGTH = CONFIG["layers"][0]["config"]["batch_input_shape"][1]
@@ -99,7 +99,9 @@ class CMDiDetect():
         if payload.strip() == "":
             return False
 
-        cmdi_regex = r'.*(;|\||&&|\n)( |)('+"|".join(UNIX_ALIASES)+').*$'
+        escaped_aliases = [re.escape(alias) for alias in UNIX_ALIASES]
+        cmdi_regex = r".*(;|\||&&|\n)( |)(" + "|".join(escaped_aliases) + ").*$"
+
         if re.search(cmdi_regex, payload, flags=re.IGNORECASE | re.UNICODE):
             return True
         return False
@@ -178,7 +180,7 @@ urls = urls = [
     "/file.php?name=../../etc/shadow",
 ]
 
-with open("file.txt","w") as f:
+""" with open("file.txt","w") as f:
 
     for payload in urls:
         f.write(payload + "\n")
@@ -189,3 +191,7 @@ with open("file.txt","w") as f:
         f.write("\n")
         f.write("-"*100)
         f.write("\n")
+ """
+cmdi=CMDiDetect()
+
+print(cmdi.Detect("http://127.0.0.1/dvwa/vulnerabilities/sqli/?id=1%27+OR+1%3D1+UNION+SELECT+1%2CDATABASE%28%29+%23&Submit=Submit&user_token=8e64522b6a10366a9c8380b896225236"))

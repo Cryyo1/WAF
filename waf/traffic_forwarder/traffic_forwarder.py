@@ -18,6 +18,7 @@ class TrafficHandler(tornado.web.RequestHandler):
         uri_parsed=urllib.parse.urlparse(uri)
         data = uri_parsed.path+"?"+uri_parsed.query
         print(f"{cr.Fore.YELLOW} {data} {cr.Fore.RESET}")
+        print(uri)
         if not isAnomalous(str(data)):
             classType="normale"
             attackType=""
@@ -76,11 +77,15 @@ class TrafficHandler(tornado.web.RequestHandler):
         self.set_header('Content-Length', len(resp.content))
 
     def parse_cookies(self, cookie):
-        cookies = {}
-        for line in cookie.split(';'):
-            key, value = line.split('=', 1)
-            cookies[key] = value
-        return cookies
+        try:
+
+            cookies = {}
+            for line in cookie.split(';'):
+                key, value = line.split('=', 1)
+                cookies[key] = value
+            return cookies
+        except:
+            pass
     
     def parse_post_data(self, data):
         post_data = {}
