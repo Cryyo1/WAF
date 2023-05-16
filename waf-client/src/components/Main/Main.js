@@ -46,11 +46,8 @@ const Main = (props) => {
         <div className="col-span-2 row-span-1 w-full h-screen rounded-md">
           <Informations
             requests={httpRequests.length}
-            ip="127.0.0.1"
-            port="8080"
             blocked={httpRequests.filter((elem) => elem.Class === "anormale").length}
             accepted={httpRequests.filter((elem) => elem.Class === "normale").length}
-            status="Down"
           />
         </div>
       </div>

@@ -3,6 +3,7 @@ from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity,unse
 import json
 import os 
 import hashlib
+import socket
 from flask_cors import CORS
 from flask import make_response
 from dotenv import load_dotenv
@@ -15,10 +16,28 @@ app.config["JWT_SECRET_KEY"]=os.getenv("JWT_SECRET_KEY")
 
 jwt=JWTManager(app)
 
+
 current_user={
     "name":"",
     "email":""
 }
+
+@app.route('/undefined/api/hello', methods=["GET"])
+def Hello():
+    return "Hello World"
+
+@app.route('/status', methods=["GET"])
+def status():
+    status={
+        "ip":"127.0.0.1",
+        "port":"8080",
+        "status":""
+    }
+    sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    result=sock.connect_ex(('localhost',8080))
+    status["status"]="Up" if result==0 else "Down"
+    return jsonify(status)
+
 
 @app.route('/api/login', methods=["POST"])
 def create_token():

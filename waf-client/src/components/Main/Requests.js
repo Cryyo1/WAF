@@ -65,7 +65,7 @@ const Requests = () => {
         return <div className='text-grey-color'>Loading...</div>;
     }
     return (
-        <div className="flex justify-center h-full max-h-full">
+        <div className="flex justify-center h-fit max-h-full">
                 <table className="table text-gray-400 border-separate border-spacing-y-1 text-sm mt-0 pt-0">
                     <thead className="bg-white text-grey-color">
                         <tr className="bg-white text-grey-color rounded-md">
