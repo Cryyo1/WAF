@@ -1,15 +1,16 @@
 [
-    ,
     {
         "id": 1,
         "name": "Chakib Boudjema",
         "email": "Chakib@gmail.com",
-        "password":"72574c051c13f4ec418ab2cc5077f49060532f1b5784d03bd2e0e1888744c857"
+        "password":"72574c051c13f4ec418ab2cc5077f49060532f1b5784d03bd2e0e1888744c857",
+        "Profile Picture":"chakib.jpg"
     },
     {
         "id": 2,
         "name": "Terkhache Yasmine",
         "email": "Yasmine@gmail.com",
-        "password":"dfb70c36bac8aab9c7509858300b6cc68b459d70fb67ce25067a00c01f715b7f"
+        "password":"dfb70c36bac8aab9c7509858300b6cc68b459d70fb67ce25067a00c01f715b7f",
+        "Profile Picture":"yasmine.jpg"
     }
 ]

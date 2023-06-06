@@ -19,7 +19,8 @@ jwt=JWTManager(app)
 
 current_user={
     "name":"",
-    "email":""
+    "email":"",
+    "profilePicture":"",
 }
 
 @app.route('/undefined/api/hello', methods=["GET"])
@@ -55,6 +56,7 @@ def create_token():
             response = {"access_token":access_token,}
             current_user["name"]=user["name"]
             current_user["email"]=email
+            current_user["profilePicture"]=user["Profile Picture"]
             return response,200
 
     return {"msg": "Bad email or password"},401

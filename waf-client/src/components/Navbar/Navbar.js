@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import logo from '../../assets/sonatrach-logo-vector.svg';
-import chakib from '../../assets/chakib.jpg';
 import { Context } from "../../store/appContext";
 
 const NavBar = (props) => {
+  // define states
+  // keyword: search keyword
+  // showMenu: show or hide the menu
+  // actions: login and logout actions from the store
+  const [keyword, setKeyword] = useState('');
   const [showMenu, setShowMenu] = useState(false);
-  const {  actions } = React.useContext(Context);
+  const { actions } = React.useContext(Context);
   const handleLogout = () => {
     actions.logout()
   }
-
+  // use effect to handle click outside the menu
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showMenu && !event.target.closest('#avatarButtonMenu')) {
@@ -22,6 +26,8 @@ const NavBar = (props) => {
     }
   }, [showMenu]);
 
+
+  // jsx code for the navbar (logo, search bar, profile picture)
   return (
     <div className="relative flex flex-row h-16 m-8 rounded-md justify-start items-center bg-white text-grey-color">
       <img src={logo} alt="sonatrach logo" className="h-4/5 m-6" />
@@ -34,6 +40,8 @@ const NavBar = (props) => {
           text-sm
           font-normal
           m-6
+          p-4
+          pl-8
           rounded-md
           border-grey-color
           text-grey-color
@@ -51,6 +59,11 @@ const NavBar = (props) => {
         id="search"
         name="search"
         placeholder="Recherche..."
+        onChange={(e) => {
+          setKeyword(e.target.value)
+          props.changeFilter(e.target.value)
+        }
+        }
       />
       <div className="flex flex-col ml-36 mr-6">
         <h1 className='font-medium text-grey'>{props.name}</h1>
@@ -58,7 +71,7 @@ const NavBar = (props) => {
       </div>
       <div className="relative">
         <img
-          src={chakib}
+          src={process.env.PUBLIC_URL + '/profiles/'+ props.profilePicture}
           className="h-10 w-10 rounded-full cursor-pointer"
           id="avatarButtonMenu"
           alt="profile"

@@ -31,21 +31,22 @@ class TrafficHandler(tornado.web.RequestHandler):
         # print the request
         if data not  in ("/requests","/data","/insert","/status"):
             print(f"{cr.Fore.YELLOW} {data} {cr.Fore.RESET}")
-        if data in ("/requests","/data","/insert","/status") or uri_parsed.query == '' or not isAnomalous(str(data)):
+        if data in ("/requests","/data","/insert","/status") or not isAnomalous(str(data)):
             # if the request is safe, forward it to the server
-            classType="normale"
+            classType="Normale"
             attackType=""
             if data not  in ("/requests","/data","/insert","/status"):
-                print(f"{cr.Fore.GREEN} safe {cr.Fore.RESET}")
+                print(f"{cr.Fore.GREEN} Normale {cr.Fore.RESET}")
             response = requests.get(uri, headers=headers, cookies=cookies)
             self.set_status(response.status_code)
             self.set_resp_headers(response)
             self.write(response.content)
         else:
             # if the request is anomalous, return 404
-            classType="anormale"
+            classType="Anormale"
             attackType=getAttackType(data)
             print(f"{cr.Fore.RED} Anomalous {cr.Fore.RESET}")
+            print(f"{cr.Fore.RED} {attackType} {cr.Fore.RESET}")
             html_404 = open('./template/index.html', 'r').read()
             self.write(html_404)
         # update the requests table
@@ -61,9 +62,10 @@ class TrafficHandler(tornado.web.RequestHandler):
         post_body = self.parse_post_data(self.request.body.decode('utf-8'))
         # creating string for the post data
         post_str=''
-        for key,value in post_body.items():
-            post_str+=key + '=' + value + "&"
-        post_str=post_str[:len(post_str)-1]
+        if post_body:
+            for key,value in post_body.items():
+                post_str+=key + '=' + value + "&"
+            post_str=post_str[:len(post_str)-1]
         uri_parsed=urllib.parse.urlparse(uri)
         if uri_parsed.path[-1] == '/':
             data=uri_parsed.path+"index.html"+'?'+post_str.replace("+"," ")
@@ -74,11 +76,11 @@ class TrafficHandler(tornado.web.RequestHandler):
         # print the request
         print(f"{cr.Fore.YELLOW} {data} {cr.Fore.RESET}")
         # check if the request is anomalous
-        if post_str == '' or not isAnomalous(str(data)):
+        if not isAnomalous(str(data)):
             # if the request is safe, forward it to the server
-            classType="normale"
+            classType="Normale"
             attackType=""
-            print(f"{cr.Fore.GREEN} safe {cr.Fore.RESET}")
+            print(f"{cr.Fore.GREEN} Normale {cr.Fore.RESET}")
             cookies = self.parse_cookies(self.request.headers.get('Cookie', 0))
             response = requests.post(uri, headers=headers, data=post_body, cookies=cookies)
             self.set_status(response.status_code)
@@ -86,9 +88,10 @@ class TrafficHandler(tornado.web.RequestHandler):
             self.write(response.content)
         else:
             # if the request is anomalous, return 404
-            classType="anormale"
+            classType="Anormale"
             attackType=getAttackType(data)
-            print(f"{cr.Fore.RED} Anomalous {cr.Fore.RESET}")
+            print(f"{cr.Fore.RED} Anormale {cr.Fore.RESET}")
+            print(f"{cr.Fore.RED} {attackType} {cr.Fore.RESET}")
             html_404 = open('./template/index.html', 'r').read()
             self.write(html_404)
         # update the database
@@ -160,7 +163,9 @@ class TrafficHandler(tornado.web.RequestHandler):
             return rsp.status_code
         else:
             pass
-        
+
+
+    
 # proxy server configuration
 def make_app():
     # return tornado web application object

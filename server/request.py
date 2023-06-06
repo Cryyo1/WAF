@@ -19,9 +19,11 @@ with open("./data/requests.json","r") as f:
 	data=json.loads(f.read())
 
 for elem in data:
-	random_datetime = randomDate("20-01-2023 8:30:00", "23-04-2023 16:50:34")
-	elem["Date time"]=str(random_datetime)
-	elem["id"]=str(uuid.uuid1()).split('-')[0]
+	type=list(elem["Type"].lower())
+	if len(type)>1:
+		type[0]=type[0].upper()
+	elem["Type"]=''.join(type)
+	
 
 with open("./data/requests.json","w") as f:
 	json.dump(data,f,indent=2)

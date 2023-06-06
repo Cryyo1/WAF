@@ -3,7 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 const DetailedReq = () => {
+    //define states
+    // httpRequests: list of http requests
     const [HttpRequets,setHttpRequests] = React.useState(null);
+    // use effect to get the http requests
     useEffect(() => {
         axios.get('http://localhost:5000/requests')
             .then(res => {
@@ -13,10 +16,12 @@ const DetailedReq = () => {
                 console.log(err);
             });
     }, []);
+    //get the id of the request from the url
     const [searchParams] = useSearchParams();
+    // get the request from the list of requests and render it
     const getRequest = () => {
-        console.log(searchParams.entries());
-        let request = HttpRequets[searchParams.get("id")];
+        let id=searchParams.get("id");
+        let request = HttpRequets.filter((elem) => elem["Id"] === id)[0];
         if (request === undefined) {
             return (
                 <div className="flex flex-row p-10">

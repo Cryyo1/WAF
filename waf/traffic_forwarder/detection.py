@@ -20,7 +20,7 @@ import tensorflow as tf
     5- LENGTH: the length of the input of the model 
 '''
 CURRENT_DIR = os.path.dirname(os.path.dirname(__file__))
-MODEL_PATH = os.path.join(CURRENT_DIR, 'models', 'lstm_final.h5')
+MODEL_PATH = os.path.join(CURRENT_DIR, 'models', 'cnn_lstm_final.h5')
 MODEL = tf.keras.models.load_model(MODEL_PATH)
 CONFIG = MODEL.get_config()
 LENGTH = CONFIG["layers"][0]["config"]["batch_input_shape"][1]
