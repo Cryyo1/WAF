@@ -1,3 +1,65 @@
 [
-10,20,33,14,15,23,12
+  {
+    "date": "2023-06-06",
+    "requests": 10,
+    "sqli": 5,
+    "xss": 2,
+    "cmdi": 2,
+    "ptr": 1,
+    "others": 0
+  },
+  {
+    "date": "2023-06-07",
+    "requests": 20,
+    "sqli": 5,
+    "xss": 5,
+    "cmdi": 2,
+    "ptr": 7,
+    "others": 1
+  },
+  {
+    "date": "2023-06-08",
+    "requests": 33,
+    "sqli": 20,
+    "xss": 11,
+    "cmdi": 1,
+    "ptr": 1,
+    "others": 0
+  },
+  {
+    "date": "2023-06-09",
+    "requests": 14,
+    "sqli": 5,
+    "xss": 2,
+    "cmdi": 2,
+    "ptr": 1,
+    "others": 4
+  },
+  {
+    "date": "2023-06-10",
+    "requests": 16,
+    "sqli": 8,
+    "xss": 2,
+    "cmdi": 2,
+    "ptr": 1,
+    "others": 3
+  },
+  {
+    "date": "2023-06-11",
+    "requests": 23,
+    "sqli": 5,
+    "xss": 12,
+    "cmdi": 2,
+    "ptr": 1,
+    "others": 3
+  },
+  {
+    "date": "2023-06-13",
+    "requests": 11,
+    "sqli": 4,
+    "xss": 6,
+    "cmdi": 0,
+    "ptr": 1,
+    "others": 0
+  }
 ]

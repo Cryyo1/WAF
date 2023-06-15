@@ -7,6 +7,7 @@ import socket
 from flask_cors import CORS
 from flask import make_response
 from dotenv import load_dotenv
+import datetime
 load_dotenv()
 app = Flask(__name__)
 cors=CORS(app, resources={r"/*": {"origins": "*"}})
@@ -25,8 +26,18 @@ current_user={
 
 @app.route('/undefined/api/hello', methods=["GET"])
 def Hello():
-    return "Hello World"
+    with open('./data/graphData.json', 'r') as jsonFile:
+        data = json.loads(jsonFile.read())
+    today=datetime.date.today()
+    lastdate=datetime.datetime.strptime(data[6]["date"],"%Y-%m-%d").date()
+    
+    if lastdate < today :
+        data[6]["date"]=str(today)
+        data[6]["requests"]=0
+        with open('./data/graphData.json','w') as jsonFile:
+            json.dump(data,jsonFile,indent=2)
 
+    return "Hello World"
 @app.route('/status', methods=["GET"])
 def status():
     status={
@@ -94,6 +105,15 @@ def insert():
     data.insert(0,post_data)
     with open('./data/requests.json','w') as jsonFile:
         json.dump(data,jsonFile,indent=2)
+    
+    if post_data["Class"] == "Anormale":
+        with open('./data/graphData.json', 'r') as jsonFile:
+            data = json.loads(jsonFile.read())
+        data[6]["requests"]+=1
+        data[6][post_data["Type"].lower()]+=1
+        with open('./data/graphData.json','w') as jsonFile:
+            json.dump(data,jsonFile,indent=2)
+        
     return 'Data inserted'
 
 

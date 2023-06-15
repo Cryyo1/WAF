@@ -31,7 +31,7 @@ const NavBar = (props) => {
   return (
     <div className="relative flex flex-row h-16 m-8 rounded-md justify-start items-center bg-white text-grey-color">
       <img src={logo} alt="sonatrach logo" className="h-4/5 m-6" />
-      <h1 className="font-semibold font-base mr-6">Waf-IA</h1>
+      <h1 className="font-semibold font-base mr-6">WAF-IA</h1>
       <input
         type="text"
         className="

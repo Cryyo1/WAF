@@ -54,13 +54,13 @@ const Main = (props) => {
     <div className="h-screen scrollbar-hide">
       <NavBar name={name} email={email} profilePicture={profilePicture} changeFilter={changeFilter} />
       <div className="grid grid-cols-5 gap-4 grid-rows-2 h-full max-h-full m-8 scroll-hide">
-        <div className="col-span-2 row-span-1 w-full h-full bg-white rounded-md pl-2 m-0">
+        <div className="col-span-2 row-span-1 w-full h-fit bg-white rounded-md pl-2 m-0">
           <Graph />
         </div>
         <div className="col-span-3 row-span-2 w-full h-full mt-0 overflow-auto scroll-hide">
           <Requests filter={filter}/>
         </div>
-        <div className="col-span-2 row-span-1 w-full h-screen rounded-md">
+        <div className="col-span-2 row-span-1 w-full h-screen rounded-md mt-8">
           <Informations
             requests={httpRequests.length}
             blocked={httpRequests.filter((elem) => elem.Class === "Anormale").length}
